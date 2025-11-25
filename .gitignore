@@ -1,0 +1,27 @@
+# Arquivos sensíveis
+.env
+*.env
+
+# Logs e cache
+*.log
+robot.log.*
+__pycache__/
+*.pyc
+
+# Banco de dados
+*.db
+*.db-journal
+*.sqlite
+
+# Diretórios de output
+images/
+articles/
+backups/
+
+# AMBIENTE VIRTUAL - NOVO ITEM
+venv/
+
+# IDEs
+.vscode/
+.idea/
+*.code-workspace

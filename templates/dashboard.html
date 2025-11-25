@@ -1,0 +1,484 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Content Robot Dashboard v3.1</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: #333;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .header {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            margin-bottom: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 10px;
+        }
+
+        .header .subtitle {
+            color: #666;
+            font-size: 1.1em;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .stat-card {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            transition: transform 0.3s;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+        }
+
+        .stat-card .icon {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+
+        .stat-card .label {
+            color: #666;
+            font-size: 0.9em;
+            margin-bottom: 5px;
+        }
+
+        .stat-card .value {
+            font-size: 2em;
+            font-weight: bold;
+            color: #667eea;
+        }
+
+        .charts-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(500px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .chart-card {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+
+        .chart-card h3 {
+            margin-bottom: 20px;
+            color: #333;
+        }
+
+        .articles-section {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            margin-bottom: 30px;
+        }
+
+        .articles-section h3 {
+            margin-bottom: 20px;
+            color: #333;
+        }
+
+        .article-item {
+            border-bottom: 1px solid #eee;
+            padding: 15px 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .article-item:last-child {
+            border-bottom: none;
+        }
+
+        .article-info {
+            flex: 1;
+        }
+
+        .article-title {
+            font-weight: bold;
+            margin-bottom: 5px;
+            color: #333;
+        }
+
+        .article-meta {
+            color: #666;
+            font-size: 0.9em;
+        }
+
+        .article-scores {
+            display: flex;
+            gap: 10px;
+        }
+
+        .score-badge {
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 0.9em;
+            font-weight: bold;
+        }
+
+        .score-excellent {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .score-good {
+            background: #cce5ff;
+            color: #004085;
+        }
+
+        .score-fair {
+            background: #fff3cd;
+            color: #856404;
+        }
+
+        .logs-section {
+            background: #1e1e1e;
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            color: #fff;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9em;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .logs-section h3 {
+            margin-bottom: 15px;
+            color: #fff;
+        }
+
+        .log-line {
+            padding: 3px 0;
+            border-bottom: 1px solid #333;
+        }
+
+        .log-info {
+            color: #4fc3f7;
+        }
+
+        .log-warning {
+            color: #ffa726;
+        }
+
+        .log-error {
+            color: #ef5350;
+        }
+
+        .log-success {
+            color: #66bb6a;
+        }
+
+        .refresh-indicator {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: white;
+            padding: 10px 20px;
+            border-radius: 20px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+            font-size: 0.9em;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 50px;
+            color: white;
+            font-size: 1.2em;
+        }
+
+        @media (max-width: 768px) {
+            .charts-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .article-item {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+            
+            .article-scores {
+                margin-top: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🤖 Content Robot Dashboard</h1>
+            <p class="subtitle">Monitoramento em tempo real v3.1</p>
+        </div>
+
+        <div class="refresh-indicator" id="refreshIndicator">
+            🔄 Atualizando...
+        </div>
+
+        <div class="stats-grid" id="statsGrid">
+            <div class="loading">Carregando estatísticas...</div>
+        </div>
+
+        <div class="charts-grid">
+            <div class="chart-card">
+                <h3>📈 Artigos Publicados (7 dias)</h3>
+                <canvas id="dailyChart"></canvas>
+            </div>
+            <div class="chart-card">
+                <h3>🎯 Distribuição de Qualidade</h3>
+                <canvas id="qualityChart"></canvas>
+            </div>
+        </div>
+
+        <div class="articles-section">
+            <h3>📰 Últimos Artigos Publicados</h3>
+            <div id="articlesList">
+                <div class="loading">Carregando artigos...</div>
+            </div>
+        </div>
+
+        <div class="logs-section">
+            <h3>📋 Logs do Sistema (últimas 50 linhas)</h3>
+            <div id="logsContainer">
+                <div class="loading" style="color: #fff;">Carregando logs...</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let dailyChart, qualityChart;
+
+        // Função para buscar estatísticas
+        async function fetchStats() {
+            try {
+                const response = await fetch('/api/stats');
+                const data = await response.json();
+                
+                document.getElementById('statsGrid').innerHTML = `
+                    <div class="stat-card">
+                        <div class="icon">📊</div>
+                        <div class="label">Total de Artigos</div>
+                        <div class="value">${data.total_articles}</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="icon">📅</div>
+                        <div class="label">Hoje</div>
+                        <div class="value">${data.today}</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="icon">📈</div>
+                        <div class="label">Últimos 7 Dias</div>
+                        <div class="value">${data.last_7_days}</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="icon">⭐</div>
+                        <div class="label">Qualidade Média</div>
+                        <div class="value">${data.avg_quality}/100</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="icon">🎨</div>
+                        <div class="label">Originalidade Média</div>
+                        <div class="value">${data.avg_originality}/100</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="icon">🤖</div>
+                        <div class="label">API Calls Hoje</div>
+                        <div class="value">${data.api_calls_today}</div>
+                    </div>
+                `;
+            } catch (error) {
+                console.error('Erro ao buscar stats:', error);
+            }
+        }
+
+        // Função para buscar artigos recentes
+        async function fetchRecentArticles() {
+            try {
+                const response = await fetch('/api/recent-articles');
+                const articles = await response.json();
+                
+                const html = articles.map(article => {
+                    const qualityClass = article.quality_score >= 90 ? 'score-excellent' : 
+                                       article.quality_score >= 75 ? 'score-good' : 'score-fair';
+                    
+                    return `
+                        <div class="article-item">
+                            <div class="article-info">
+                                <div class="article-title">${article.title}</div>
+                                <div class="article-meta">
+                                    📰 ${article.source} • 🕒 ${article.published_date}
+                                    ${article.wordpress_url ? `• <a href="${article.wordpress_url}" target="_blank">Ver no site</a>` : ''}
+                                </div>
+                            </div>
+                            <div class="article-scores">
+                                <span class="score-badge ${qualityClass}">
+                                    Q: ${article.quality_score || 0}/100
+                                </span>
+                                <span class="score-badge ${qualityClass}">
+                                    O: ${article.originality_score || 0}/100
+                                </span>
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+                
+                document.getElementById('articlesList').innerHTML = html || '<p>Nenhum artigo publicado ainda.</p>';
+            } catch (error) {
+                console.error('Erro ao buscar artigos:', error);
+            }
+        }
+
+        // Função para buscar dados dos gráficos
+        async function fetchChartData() {
+            try {
+                const response = await fetch('/api/chart-data');
+                const data = await response.json();
+                
+                // Gráfico de artigos diários
+                if (dailyChart) dailyChart.destroy();
+                const dailyCtx = document.getElementById('dailyChart').getContext('2d');
+                dailyChart = new Chart(dailyCtx, {
+                    type: 'line',
+                    data: {
+                        labels: data.daily_articles.labels,
+                        datasets: [{
+                            label: 'Artigos',
+                            data: data.daily_articles.data,
+                            borderColor: '#667eea',
+                            backgroundColor: 'rgba(102, 126, 234, 0.1)',
+                            tension: 0.4,
+                            fill: true
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        plugins: {
+                            legend: {
+                                display: false
+                            }
+                        },
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                ticks: {
+                                    stepSize: 1
+                                }
+                            }
+                        }
+                    }
+                });
+                
+                // Gráfico de distribuição de qualidade
+                if (qualityChart) qualityChart.destroy();
+                const qualityCtx = document.getElementById('qualityChart').getContext('2d');
+                qualityChart = new Chart(qualityCtx, {
+                    type: 'doughnut',
+                    data: {
+                        labels: data.quality_distribution.labels,
+                        datasets: [{
+                            data: data.quality_distribution.data,
+                            backgroundColor: [
+                                '#4caf50',
+                                '#8bc34a',
+                                '#ffeb3b',
+                                '#ff9800',
+                                '#f44336'
+                            ]
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        plugins: {
+                            legend: {
+                                position: 'bottom'
+                            }
+                        }
+                    }
+                });
+            } catch (error) {
+                console.error('Erro ao buscar dados dos gráficos:', error);
+            }
+        }
+
+        // Função para buscar logs
+        async function fetchLogs() {
+            try {
+                const response = await fetch('/api/logs');
+                const data = await response.json();
+                
+                const html = data.logs.map(line => {
+                    let className = 'log-info';
+                    if (line.includes('ERROR') || line.includes('❌')) className = 'log-error';
+                    else if (line.includes('WARNING') || line.includes('⚠️')) className = 'log-warning';
+                    else if (line.includes('✅') || line.includes('SUCCESS')) className = 'log-success';
+                    
+                    return `<div class="log-line ${className}">${line}</div>`;
+                }).join('');
+                
+                document.getElementById('logsContainer').innerHTML = html;
+            } catch (error) {
+                console.error('Erro ao buscar logs:', error);
+            }
+        }
+
+        // Função para atualizar tudo
+        async function updateDashboard() {
+            document.getElementById('refreshIndicator').style.display = 'block';
+            
+            await Promise.all([
+                fetchStats(),
+                fetchRecentArticles(),
+                fetchChartData(),
+                fetchLogs()
+            ]);
+            
+            setTimeout(() => {
+                document.getElementById('refreshIndicator').style.display = 'none';
+            }, 1000);
+        }
+
+        // Atualiza ao carregar
+        updateDashboard();
+
+        // Atualiza a cada 30 segundos
+        setInterval(updateDashboard, 30000);
+    </script>
+</body>
+</html>
