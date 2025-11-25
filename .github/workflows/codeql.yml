@@ -1,41 +1,35 @@
-name: "CodeQL"
+name: "CodeQL Python"
 
 on:
   push:
-    branches: ["master"]
+    branches: [ "main" ]
   pull_request:
-    branches: ["master"]
+    branches: [ "main" ]
+  schedule:
+    - cron: '21 16 * * 6'  
 
 jobs:
   analyze:
-    name: Analyze
-    runs-on: ${{ vars.RUNNERS || 'ubuntu-latest' }}
+    name: Analyze Python
+    runs-on: ubuntu-latest
 
     permissions:
+      security-events: write
+      packages: read
       actions: read
       contents: read
-      security-events: write
 
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
+    - name: Checkout repository
+      uses: actions/checkout@v4
 
-      - name: Setup Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: "3.11"
+    - name: Initialize CodeQL
+      uses: github/codeql-action/init@v4
+      with:
+        languages: python
+        build-mode: none
 
-      - name: Initialize CodeQL
-        uses: github/codeql-action/init@v4
-        with:
-          languages: python
-          build-mode: none
-          config-file: ./.github/codeql/codeql-config.yml
-
-      - name: Disable Python autobuild
-        run: echo "Skipping Python autobuild"
-
-      - name: Run CodeQL Analysis
-        uses: github/codeql-action/analyze@v4
-        with:
-          category: "/language:python"
+    - name: Perform CodeQL Analysis
+      uses: github/codeql-action/analyze@v4
+      with:
+        category: "/language:python"
